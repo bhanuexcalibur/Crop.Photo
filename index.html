@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop.photo · Bhanu Kumar · Proof of Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:   #080909;
+  --bg2:  #0e0f10;
+  --bg3:  #141516;
+  --bg4:  #1a1b1c;
+  --bg5:  #212223;
+  --bdr:  rgba(255,255,255,0.065);
+  --bmd:  rgba(255,255,255,0.12);
+  --blg:  rgba(255,255,255,0.20);
+  --t1:   #ece9e4;
+  --t2:   #908d88;
+  --t3:   #4a4845;
+
+  /* Accent: warm magenta-coral, editorial/visual brand */
+  --cr:       #e8406a;
+  --cr2:      #f0607e;
+  --cr-dim:   rgba(232,64,106,0.10);
+  --cr-glow:  rgba(232,64,106,0.20);
+  --cr-t:     #f4839a;
+
+  /* Secondary: deep teal */
+  --tl:       #2ec4b6;
+  --tl-dim:   rgba(46,196,182,0.09);
+  --tl-t:     #5ed4ca;
+
+  /* Semantic */
+  --grn:      #3dba7a;
+  --grn-dim:  rgba(61,186,122,0.09);
+  --amb:      #f0a030;
+  --amb-dim:  rgba(240,160,48,0.09);
+  --red:      #e05858;
+  --red-dim:  rgba(224,88,88,0.09);
+  --pur:      #9b7ff0;
+  --pur-dim:  rgba(155,127,240,0.09);
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:58px}
+body{
+  background:var(--bg);color:var(--t1);
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:16px;line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* reading bar */
+#rbar{position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--cr),var(--tl));
+  z-index:999;width:0;transition:width .08s linear}
+
+/* ===== NAV ===== */
+.nav{
+  position:sticky;top:0;z-index:300;
+  background:rgba(8,9,9,0.94);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--bdr);
+  padding:0 5vw;
+}
+.nav-i{
+  max-width:1160px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;gap:16px;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  color:var(--t3);letter-spacing:.05em;
+}
+.nav-brand .sep{color:var(--t3);margin:0 4px}
+.nav-brand .hi{color:var(--cr-t)}
+.nav-links{display:flex;gap:2px}
+.nl{
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  padding:5px 13px;border-radius:100px;border:1px solid transparent;
+  color:var(--t3);text-decoration:none;
+  transition:all .13s;white-space:nowrap;letter-spacing:.01em;
+}
+.nl:hover{border-color:var(--bdr);color:var(--t2)}
+.nl.cta{
+  background:var(--cr-dim);border-color:rgba(232,64,106,.22);
+  color:var(--cr-t);
+}
+.nl.cta:hover{background:rgba(232,64,106,.18);border-color:rgba(232,64,106,.35)}
+.hbg{
+  display:none;flex-direction:column;gap:5px;
+  cursor:pointer;background:none;border:none;padding:4px;flex-shrink:0;
+}
+.hbg span{display:block;width:20px;height:1.5px;background:var(--t1);border-radius:2px;transition:all .3s}
+.hbg.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hbg.open span:nth-child(2){opacity:0}
+.hbg.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.mob-menu{
+  display:none;position:fixed;inset:0;top:56px;
+  background:var(--bg);z-index:290;
+  flex-direction:column;padding:28px 5vw;
+  border-top:1px solid var(--bdr);
+}
+.mob-menu.open{display:flex}
+.mob-menu a{
+  display:block;font-size:21px;
+  font-family:'Cormorant Garamond',serif;font-weight:500;font-style:italic;
+  color:var(--t1);text-decoration:none;
+  padding:16px 0;border-bottom:1px solid var(--bdr);
+}
+.mob-menu a:last-child{border-bottom:none}
+.mob-menu a.mob-cta{color:var(--cr-t)}
+@media(max-width:760px){.nav-links{display:none}.hbg{display:flex}}
+
+/* ===== LAYOUT ===== */
+.wrap{max-width:1160px;margin:0 auto;padding:0 5vw}
+section{padding:80px 0;border-bottom:1px solid var(--bdr);position:relative}
+
+/* ===== REVEAL ===== */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .48s ease,transform .48s ease}
+.rv.in{opacity:1;transform:none}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--cr);border-radius:2px}
+
+/* ===== HERO ===== */
+.hero-wrap{
+  border-bottom:1px solid var(--bdr);
+  padding:72px 5vw 64px;
+  max-width:1160px;margin:0 auto;
+}
+
+/* --- Before/After Slider --- */
+.ba-container{
+  position:relative;width:100%;height:clamp(240px,38vw,480px);
+  border-radius:16px;overflow:hidden;
+  border:1px solid var(--bdr);
+  cursor:col-resize;
+  user-select:none;-webkit-user-select:none;
+  margin-bottom:48px;
+}
+
+/* AFTER side (right): clean product, full width base */
+.ba-after{
+  position:absolute;inset:0;
+  background:#f8f8f8;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.ba-after-inner{
+  position:relative;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+/* clean white background panel */
+.ba-after-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(145deg,#ffffff 0%,#f2f2f2 100%);
+}
+/* product silhouette: a perfume bottle shape in CSS */
+.product-clean{
+  position:relative;z-index:2;
+  width:clamp(60px,10vw,110px);
+  height:clamp(120px,20vw,220px);
+  display:flex;flex-direction:column;align-items:center;
+  filter:drop-shadow(0 12px 32px rgba(0,0,0,0.12));
+}
+.prod-cap{
+  width:38%;height:12%;
+  background:linear-gradient(135deg,#2a2a2a,#444);
+  border-radius:4px 4px 0 0;
+  flex-shrink:0;
+}
+.prod-neck{
+  width:28%;height:8%;
+  background:linear-gradient(135deg,#1a1a1a,#333);
+  flex-shrink:0;
+}
+.prod-body{
+  width:100%;flex:1;
+  background:linear-gradient(135deg,#e8e0d8 0%,#d4c8bc 40%,#c2b4a6 100%);
+  border-radius:6px 6px 8px 8px;
+  position:relative;overflow:hidden;
+  box-shadow:inset -4px 0 12px rgba(0,0,0,0.08);
+}
+.prod-body::after{
+  content:'';position:absolute;top:10%;left:15%;right:40%;bottom:10%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.5),transparent);
+  border-radius:2px;
+}
+.prod-label{
+  position:absolute;bottom:18%;left:10%;right:10%;
+  height:30%;
+  background:rgba(255,255,255,0.7);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+}
+.prod-label-line{
+  width:60%;height:2px;background:rgba(0,0,0,0.15);border-radius:1px;
+  box-shadow:0 4px 0 rgba(0,0,0,0.08),0 8px 0 rgba(0,0,0,0.06);
+}
+
+/* compliance badge */
+.ba-badge{
+  position:absolute;bottom:16px;right:16px;z-index:3;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(61,186,122,0.15);
+  border:1px solid rgba(61,186,122,0.35);
+  color:#3dba7a;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.08em;padding:5px 12px;border-radius:100px;
+  backdrop-filter:blur(4px);
+}
+.ba-badge .dot{width:5px;height:5px;border-radius:50%;background:#3dba7a;flex-shrink:0}
+.ba-specs{
+  position:absolute;top:16px;left:16px;z-index:3;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:.08em;color:rgba(0,0,0,0.35);
+  line-height:1.8;
+}
+
+/* BEFORE side (left): clipped on top of after, shows messy raw version */
+.ba-before{
+  position:absolute;inset:0;
+  overflow:hidden;
+}
+.ba-before-inner{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#1c1a18 0%,#2a2520 50%,#1a1a18 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+/* messy background texture */
+.ba-before-inner::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 30% 60%,rgba(180,140,100,0.25) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 50% at 70% 30%,rgba(100,80,60,0.3) 0%,transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='30' height='30' fill='rgba(255,255,255,0.012)'/%3E%3Crect x='30' y='30' width='30' height='30' fill='rgba(255,255,255,0.012)'/%3E%3C/svg%3E");
+}
+/* shadow blotches simulating studio clutter */
+.ba-clutter{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(20px);
+  pointer-events:none;
+}
+.ba-clutter.c1{width:120px;height:80px;background:rgba(140,100,60,.4);top:15%;left:10%}
+.ba-clutter.c2{width:100px;height:100px;background:rgba(80,60,40,.5);bottom:20%;right:15%}
+.ba-clutter.c3{width:60px;height:60px;background:rgba(200,160,100,.2);top:60%;left:50%}
+
+/* same product but with dark bg and visible imperfections */
+.product-raw{
+  position:relative;z-index:2;
+  width:clamp(60px,10vw,110px);
+  height:clamp(120px,20vw,220px);
+  display:flex;flex-direction:column;align-items:center;
+  transform:rotate(-2deg);
+  filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+}
+.product-raw .prod-cap{background:linear-gradient(135deg,#2a2a2a,#444);opacity:.9}
+.product-raw .prod-neck{background:linear-gradient(135deg,#1a1a1a,#333);opacity:.9}
+.product-raw .prod-body{
+  background:linear-gradient(135deg,#c8bfb4 0%,#b8a898 40%,#a89880 100%);
+  box-shadow:inset -4px 0 12px rgba(0,0,0,0.25);
+}
+/* harsh shadow artefact */
+.product-raw .prod-body::before{
+  content:'';position:absolute;bottom:0;left:-20%;right:-20%;height:40%;
+  background:linear-gradient(0deg,rgba(0,0,0,0.4),transparent);
+  pointer-events:none;
+}
+.prod-watermark{
+  position:absolute;top:20%;left:5%;
+  font-family:'JetBrains Mono',monospace;font-size:8px;
+  color:rgba(255,255,255,0.18);letter-spacing:.1em;
+  transform:rotate(-30deg);
+  white-space:nowrap;pointer-events:none;
+}
+
+.ba-raw-tag{
+  position:absolute;bottom:16px;left:16px;z-index:3;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(224,88,88,0.15);
+  border:1px solid rgba(224,88,88,0.3);
+  color:#e05858;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.06em;padding:5px 12px;border-radius:100px;
+}
+
+/* Width reveal — compositor only, zero layout/paint cost */
+.ba-before{width:50%;overflow:hidden;will-change:width}
+.ba-before-inner{
+  /* Fixed pixel width set by JS so content doesn't squash as panel shrinks */
+  width:var(--ba-inner-w, 800px);
+  position:absolute;left:0;top:0;height:100%;
+}
+
+/* Divider line */
+.ba-divider{
+  position:absolute;top:0;bottom:0;
+  left:50%;transform:translateX(-50%);
+  width:2px;background:var(--cr);
+  z-index:10;pointer-events:none;
+  box-shadow:0 0 12px var(--cr-glow),0 0 2px var(--cr);
+}
+/* Drag handle */
+.ba-handle{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:40px;height:40px;border-radius:50%;
+  background:var(--cr);
+  border:2px solid rgba(255,255,255,0.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:col-resize;
+  box-shadow:0 0 20px var(--cr-glow),0 2px 8px rgba(0,0,0,0.4);
+  z-index:11;
+  transition:transform .1s ease;
+}
+.ba-handle:active{transform:translate(-50%,-50%) scale(0.92)}
+.ba-handle svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+
+/* Labels on slider */
+.ba-label{
+  position:absolute;top:16px;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:.16em;text-transform:uppercase;z-index:4;
+  padding:4px 10px;border-radius:4px;
+}
+.ba-label.lft{
+  left:16px;
+  background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.5);
+  backdrop-filter:blur(4px);
+}
+.ba-label.rgt{
+  right:16px;
+  background:rgba(0,0,0,0.25);color:rgba(0,0,0,0.4);
+  backdrop-filter:blur(4px);
+}
+
+/* --- Hero text below slider --- */
+.hero-text{
+  display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;
+}
+@media(max-width:720px){.hero-text{grid-template-columns:1fr}}
+
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
+  margin-bottom:16px;
+}
+.hero-kicker-bar{width:24px;height:1px;background:var(--cr)}
+
+.hero-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(42px,6.5vw,80px);
+  font-weight:500;line-height:.96;
+  letter-spacing:-.025em;color:var(--t1);
+  margin-bottom:18px;
+}
+.hero-h em{
+  font-style:italic;color:transparent;
+  -webkit-text-stroke:1px rgba(232,64,106,.55);
+}
+.hero-h .cr{color:var(--cr)}
+
+.hero-desc{
+  font-size:clamp(13px,1.4vw,15px);color:var(--t2);
+  line-height:1.72;max-width:520px;font-weight:300;
+}
+.hero-desc strong{color:var(--t1);font-weight:400}
+
+.hero-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.hero-links{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn-cr{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--cr);color:#fff;
+  padding:9px 20px;border-radius:6px;
+  font-size:13px;font-weight:600;text-decoration:none;
+  transition:opacity .15s;letter-spacing:.01em;
+}
+.btn-cr:hover{opacity:.85}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:7px;
+  background:transparent;color:var(--t2);
+  border:1px solid var(--bdr);
+  padding:8px 18px;border-radius:6px;
+  font-size:13px;font-weight:500;text-decoration:none;
+  transition:all .15s;
+}
+.btn-ghost:hover{border-color:var(--bmd);color:var(--t1)}
+.hero-toc{
+  display:flex;gap:0;flex-direction:column;align-items:flex-end;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--t3);letter-spacing:.05em;line-height:2.2;
+}
+.hero-toc a{
+  text-decoration:none;color:var(--t3);transition:color .13s;
+  padding-right:12px;border-right:2px solid var(--cr-dim);
+}
+.hero-toc a:hover{color:var(--t2)}
+
+@media(max-width:720px){
+  .hero-actions{align-items:flex-start}
+  .hero-toc{align-items:flex-start}
+  .hero-toc a{padding-right:0;padding-left:12px;border-right:none;border-left:2px solid var(--cr-dim)}
+}
+
+/* ===== SEC HEADER ===== */
+.sec-ey{display:flex;align-items:center;gap:12px;margin-bottom:40px}
+.sec-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;
+  color:var(--cr-t);background:var(--cr-dim);
+  border:1px solid rgba(232,64,106,.2);
+  padding:3px 12px;border-radius:100px;letter-spacing:.08em;white-space:nowrap;
+}
+.sec-label{
+  font-size:11px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t3);
+}
+h2.sec-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(30px,4vw,48px);font-weight:500;
+  letter-spacing:-.02em;color:var(--t1);margin-bottom:12px;line-height:1.1;
+}
+.sec-sub{font-size:15px;color:var(--t2);line-height:1.72;max-width:660px;margin-bottom:40px}
+
+/* ===== S1: MESSAGING AUDIT ===== */
+.audit-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:14px;overflow:hidden}
+@media(max-width:720px){.audit-grid{grid-template-columns:1fr}}
+.audit-cell{background:var(--bg2);padding:28px 30px}
+.audit-cell.full{grid-column:1/-1;background:var(--bg3)}
+.audit-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--t3);margin-bottom:14px;
+}
+.audit-cell h3{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:20px;color:var(--t1);margin-bottom:10px;letter-spacing:-.01em;
+}
+.audit-cell p{font-size:14px;color:var(--t2);line-height:1.72}
+.audit-cell p strong{color:var(--t1);font-weight:500}
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:4px 12px;border-radius:100px;
+  border:1px solid var(--bdr);color:var(--t2);
+}
+.badge.ok{color:var(--grn);background:var(--grn-dim);border-color:rgba(61,186,122,.2)}
+.badge.warn{color:var(--amb);background:var(--amb-dim);border-color:rgba(240,160,48,.2)}
+.badge.gap{color:var(--red);background:var(--red-dim);border-color:rgba(224,88,88,.2)}
+.badge.tl{color:var(--tl-t);background:var(--tl-dim);border-color:rgba(46,196,182,.2)}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* comparison strip inside audit */
+.cmp-strip{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bdr);border-radius:10px;overflow:hidden;margin-top:20px}
+@media(max-width:480px){.cmp-strip{grid-template-columns:1fr}}
+.cmp-col{background:var(--bg4);padding:18px 20px}
+.cmp-col h4{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:12px;
+}
+.cmp-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:13px;color:var(--t2);line-height:1.5}
+.cmp-row .icon{flex-shrink:0;margin-top:2px;font-size:12px}
+
+/* ===== S2: PLG NARRATIVE ===== */
+.plg-phases{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:900px){.plg-phases{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.plg-phases{grid-template-columns:1fr}}
+.phase-card{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:12px;padding:24px 22px;
+  position:relative;overflow:hidden;
+}
+.phase-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--cr);opacity:.35;
+}
+.phase-num{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.14em;color:var(--cr-t);margin-bottom:12px;display:block;
+}
+.phase-card h3{
+  font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;
+  color:var(--t1);margin-bottom:8px;
+}
+.phase-card p{font-size:13.5px;color:var(--t2);line-height:1.65}
+.phase-card p strong{color:var(--t1);font-weight:500}
+.phase-hook{
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);
+  font-size:12.5px;color:var(--t3);line-height:1.5;font-style:italic;
+  font-family:'Cormorant Garamond',serif;
+}
+
+.plg-insight{
+  margin-top:32px;background:var(--bg2);border:1px solid var(--bdr);
+  border-left:3px solid var(--cr);
+  border-radius:0 10px 10px 0;padding:22px 26px;
+  font-size:14.5px;color:var(--t2);line-height:1.72;
+}
+.plg-insight strong{color:var(--t1);font-weight:500}
+
+/* ===== S3: ICP MAP ===== */
+.icp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:800px){.icp-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.icp-grid{grid-template-columns:1fr}}
+.icp-card{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:12px;padding:26px 24px;
+}
+.icp-card .role{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tl-t);margin-bottom:6px;
+}
+.icp-card h3{
+  font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;
+  color:var(--t1);margin-bottom:12px;
+}
+.icp-row{
+  display:flex;flex-direction:column;gap:8px;
+  font-size:13px;color:var(--t2);line-height:1.6;
+}
+.icp-r{display:flex;gap:8px;align-items:flex-start}
+.icp-r .lbl{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--t3);
+  white-space:nowrap;padding-top:2px;min-width:52px;
+}
+.icp-r span{color:var(--t2)}
+
+.journey-strip{
+  margin-top:32px;display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:0;background:var(--bdr);border:1px solid var(--bdr);
+  border-radius:12px;overflow:hidden;
+}
+@media(max-width:700px){.journey-strip{grid-template-columns:1fr 1fr}}
+@media(max-width:380px){.journey-strip{grid-template-columns:1fr}}
+.jstep{
+  background:var(--bg2);padding:20px 18px;
+  border-right:1px solid var(--bdr);
+  position:relative;
+}
+.jstep:last-child{border-right:none}
+.jstep .js-n{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:.12em;color:var(--t3);margin-bottom:8px;display:block;
+}
+.jstep h4{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16px;
+  color:var(--t1);margin-bottom:6px;
+}
+.jstep p{font-size:12.5px;color:var(--t2);line-height:1.55}
+.jstep .cue{
+  display:inline-block;margin-top:10px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--cr-t);letter-spacing:.05em;
+}
+.jstep.active{background:var(--bg3)}
+.jstep.active::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cr)
+}
+
+/* ===== S4: FEATURE LAUNCH BRIEF ===== */
+.launch-shell{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:16px;overflow:hidden;
+}
+.launch-header{
+  padding:28px 32px;border-bottom:1px solid var(--bdr);
+  background:var(--bg3);
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.launch-header h3{
+  font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;
+  color:var(--t1);margin-bottom:4px;letter-spacing:-.015em;
+}
+.launch-header p{font-size:13px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+.launch-status{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--cr-dim);color:var(--cr-t);
+  border:1px solid rgba(232,64,106,.2);
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:5px 14px;border-radius:100px;white-space:nowrap;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--cr);animation:blink 2.2s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.launch-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:700px){.launch-body{grid-template-columns:1fr}}
+.launch-col{padding:28px 32px;border-right:1px solid var(--bdr)}
+.launch-col:last-child{border-right:none}
+.lc-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
+  margin-bottom:16px;
+}
+.lc-label.tl{color:var(--tl-t)}
+.lc-item{
+  display:flex;gap:10px;align-items:flex-start;
+  font-size:13.5px;color:var(--t2);line-height:1.6;
+  margin-bottom:14px;
+}
+.lc-item:last-child{margin-bottom:0}
+.lc-item .ck{color:var(--cr);font-size:13px;flex-shrink:0;margin-top:2px}
+.lc-item strong{color:var(--t1);font-weight:500}
+.launch-footer{
+  padding:20px 32px;border-top:1px solid var(--bdr);
+  background:var(--bg3);
+  font-size:13px;color:var(--t2);line-height:1.6;
+  display:flex;gap:32px;flex-wrap:wrap;
+}
+.lf-item .lf-k{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:3px;
+}
+.lf-item .lf-v{font-size:13.5px;color:var(--t1)}
+
+/* ===== S5: MESSAGING FRAMEWORK ===== */
+.msg-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.msg-card{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  display:grid;grid-template-columns:200px 1fr;gap:0;overflow:hidden;
+}
+@media(max-width:600px){.msg-card{grid-template-columns:1fr}}
+.msg-left{
+  padding:24px 22px;border-right:1px solid var(--bdr);
+  background:var(--bg3);
+}
+.msg-left .seg{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--tl-t);margin-bottom:10px;
+}
+.msg-left h3{
+  font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;
+  color:var(--t1);margin-bottom:8px;
+}
+.msg-left p{font-size:12.5px;color:var(--t2);line-height:1.6}
+.msg-right{padding:24px 26px}
+.msg-line{
+  font-size:16px;color:var(--t1);font-weight:400;
+  line-height:1.55;margin-bottom:14px;border-bottom:1px solid var(--bdr);padding-bottom:14px;
+}
+.msg-line span{color:var(--cr-t)}
+.msg-proof{font-size:13px;color:var(--t2);line-height:1.65}
+.msg-proof strong{color:var(--t1);font-weight:500}
+
+/* ===== S6: CHANNEL PLAY ===== */
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.channel-grid{grid-template-columns:1fr}}
+.channel-card{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  padding:24px 26px;
+}
+.channel-card .ch-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;
+}
+.channel-card h3{
+  font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;
+  color:var(--t1);margin-bottom:10px;
+}
+.channel-card p{font-size:13.5px;color:var(--t2);line-height:1.65}
+.channel-card p strong{color:var(--t1);font-weight:500}
+.ch-metric{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:14px;padding:6px 14px;border-radius:100px;
+  background:var(--tl-dim);border:1px solid rgba(46,196,182,.18);
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tl-t);
+}
+
+/* ===== S7: OTHER WORK ===== */
+.ow-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.ow-grid{grid-template-columns:1fr}}
+.ow-card{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  padding:26px 26px;text-decoration:none;
+  transition:border-color .15s,background .15s;display:block;
+}
+.ow-card:hover{border-color:var(--bmd);background:var(--bg3)}
+.ow-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.ow-co{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
+}
+.ow-arrow{color:var(--t3);font-size:14px;flex-shrink:0;transition:color .15s}
+.ow-card:hover .ow-arrow{color:var(--cr-t)}
+.ow-card h3{
+  font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:500;
+  color:var(--t1);margin-bottom:8px;
+}
+.ow-card p{font-size:13px;color:var(--t2);line-height:1.6}
+.ow-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.ow-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.06em;padding:3px 10px;border-radius:100px;
+  border:1px solid var(--bdr);color:var(--t3);
+}
+/* first card full width */
+.ow-card.featured{grid-column:1/-1}
+
+/* ===== FOOTER ===== */
+.footer{
+  padding:60px 0;border-top:none;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:20px;
+}
+.footer-name{
+  font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;
+  color:var(--t1);font-style:italic;
+}
+.footer-links{display:flex;gap:16px;align-items:center}
+.footer-links a{
+  font-size:13px;color:var(--t3);text-decoration:none;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  letter-spacing:.04em;transition:color .14s;
+}
+.footer-links a:hover{color:var(--t1)}
+.footer-copy{font-size:12px;color:var(--t3);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<div id="rbar"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-i">
+    <div class="nav-brand">
+      <span>bhanu kumar</span>
+      <span class="sep">/</span>
+      <span class="hi">crop.photo</span>
+    </div>
+    <div class="nav-links">
+      <a href="#messaging" class="nl">Messaging</a>
+      <a href="#plg" class="nl">PLG</a>
+      <a href="#icp" class="nl">ICP</a>
+      <a href="#launch" class="nl">Launch</a>
+      <a href="#framework" class="nl">Framework</a>
+      <a href="#other-work" class="nl">Other Work</a>
+      <a href="https://drive.google.com/file/d/16YxkMHpBQK0nUaM9NcRrBVWuNuxS2q-l/view?usp=sharing" target="_blank" rel="noopener" class="nl cta">Resume</a>
+    </div>
+    <button class="hbg" id="hbg" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mob-menu" id="mob-menu">
+  <a href="#messaging" onclick="closeMob()">Messaging Audit</a>
+  <a href="#plg" onclick="closeMob()">PLG Narrative</a>
+  <a href="#icp" onclick="closeMob()">ICP Map</a>
+  <a href="#launch" onclick="closeMob()">Launch Brief</a>
+  <a href="#framework" onclick="closeMob()">Messaging Framework</a>
+  <a href="#other-work" onclick="closeMob()">Other Work</a>
+  <a href="https://drive.google.com/file/d/16YxkMHpBQK0nUaM9NcRrBVWuNuxS2q-l/view?usp=sharing" target="_blank" class="mob-cta">Resume</a>
+</div>
+
+<!-- HERO -->
+<div class="hero-wrap">
+
+  <!-- Before / After Slider -->
+  <div class="ba-container" id="baContainer">
+
+    <!-- AFTER (right, clean) -->
+    <div class="ba-after">
+      <div class="ba-after-inner">
+        <div class="ba-after-bg"></div>
+        <div class="product-clean">
+          <div class="prod-cap"></div>
+          <div class="prod-neck"></div>
+          <div class="prod-body">
+            <div class="prod-label"><div class="prod-label-line"></div></div>
+          </div>
+        </div>
+        <div class="ba-badge"><span class="dot"></span>Marketplace ready</div>
+        <div class="ba-specs">2000 × 2000px<br>White BG · Centered<br>Amazon compliant</div>
+      </div>
+    </div>
+
+    <!-- BEFORE (left, clipped) -->
+    <div class="ba-before" id="baBefore">
+      <div class="ba-before-inner">
+        <div class="ba-clutter c1"></div>
+        <div class="ba-clutter c2"></div>
+        <div class="ba-clutter c3"></div>
+        <div class="product-raw">
+          <div class="prod-cap"></div>
+          <div class="prod-neck"></div>
+          <div class="prod-body">
+            <div class="prod-label"><div class="prod-label-line"></div></div>
+            <div class="prod-watermark">RAW · UNEDITED</div>
+          </div>
+        </div>
+        <div class="ba-raw-tag">✕ &nbsp;Not compliant</div>
+      </div>
+    </div>
+
+    <!-- Labels -->
+    <div class="ba-label lft">Before</div>
+    <div class="ba-label rgt">After</div>
+
+    <!-- Divider + Handle -->
+    <div class="ba-divider" id="baDivider">
+      <div class="ba-handle" id="baHandle">
+        <svg viewBox="0 0 20 16">
+          <polyline points="6,2 2,8 6,14"/>
+          <polyline points="14,2 18,8 14,14"/>
+        </svg>
+      </div>
+    </div>
+
+  </div><!-- /ba-container -->
+
+  <!-- Text below slider -->
+  <div class="hero-text rv">
+    <div>
+      <div class="hero-kicker">
+        <span class="hero-kicker-bar"></span>
+        Product Marketing · Visual AI · PLG
+      </div>
+      <h1 class="hero-h">
+        Visual <em>consistency</em><br>at <span class="cr">scale.</span>
+      </h1>
+      <p class="hero-desc">
+        Crop.photo and Evolphin Zoom sit at a rare intersection: <strong>creative ops automation meets enterprise DAM</strong>. This is a look at the GTM and messaging work needed to win that market.
+      </p>
+    </div>
+    <div class="hero-actions">
+      <div class="hero-links">
+        <a href="https://www.linkedin.com/in/bhanuexcalibur/" target="_blank" rel="noopener" class="btn-ghost">LinkedIn</a>
+        <a href="https://drive.google.com/file/d/16YxkMHpBQK0nUaM9NcRrBVWuNuxS2q-l/view?usp=sharing" target="_blank" rel="noopener" class="btn-cr">Resume ↗</a>
+      </div>
+      <div class="hero-toc">
+        <a href="#messaging">Messaging Audit</a>
+        <a href="#plg">PLG Narrative</a>
+        <a href="#icp">ICP &amp; Journey</a>
+        <a href="#launch">Launch Brief</a>
+        <a href="#framework">Messaging Framework</a>
+        <a href="#other-work">Other Work</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /hero-wrap -->
+
+<!-- S1: MESSAGING AUDIT -->
+<section id="messaging">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">01 · Messaging Audit</span>
+      <span class="sec-label">What the current narrative gets right, and where it leaves room</span>
+    </div>
+    <h2 class="sec-h rv">Reading the current story</h2>
+    <p class="sec-sub rv">Crop.photo has a real product with real traction. The question is whether the messaging around it does justice to the actual business value it delivers to creative and retail teams.</p>
+
+    <div class="audit-grid rv">
+      <div class="audit-cell">
+        <div class="audit-label">What's working</div>
+        <h3>The "bulk editing" hook</h3>
+        <p>Leading with automation speed lands well for ecommerce teams who know the pain of 1,000-image shoots. <strong>Crop, resize, background removal</strong> are concrete and scannable. The use of real customer names (Lacoste, Urban Outfitters, AP News) adds instant credibility.</p>
+        <div class="badge-row">
+          <span class="badge ok"><span class="dot"></span>Concrete use case</span>
+          <span class="badge ok"><span class="dot"></span>Named customers</span>
+          <span class="badge ok"><span class="dot"></span>Speed narrative</span>
+        </div>
+      </div>
+
+      <div class="audit-cell">
+        <div class="audit-label">Tension point</div>
+        <h3>Crop.photo vs Evolphin: two stories competing</h3>
+        <p>The PLG product (Crop.photo) and the mature enterprise DAM (Evolphin Zoom) run separate narratives. A buyer who lands on crop.photo doesn't immediately understand the <strong>Evolphin relationship or the full workflow</strong> they're stepping into.</p>
+        <div class="badge-row">
+          <span class="badge warn"><span class="dot"></span>Fragmented story</span>
+          <span class="badge warn"><span class="dot"></span>Enterprise value hidden</span>
+        </div>
+      </div>
+
+      <div class="audit-cell">
+        <div class="audit-label">Positioning gap</div>
+        <h3>The "brand consistency" claim needs proof</h3>
+        <p>Crop.photo calls out brand consistency, but the page leans heavily on <strong>speed and automation</strong> without showing how those outputs stay on-brand. Competitors like PhotoRoom and Spyne.ai are moving toward brand-aware AI. Crop.photo has the DAM backbone to win here, but doesn't say so clearly.</p>
+        <div class="badge-row">
+          <span class="badge gap"><span class="dot"></span>Underdeveloped claim</span>
+          <span class="badge tl"><span class="dot"></span>Evolphin DAM as differentiator</span>
+        </div>
+      </div>
+
+      <div class="audit-cell">
+        <div class="audit-label">Category opportunity</div>
+        <h3>Nobody owns "creative ops intelligence" yet</h3>
+        <p>The market has image editors, DAMs, and brand management tools, but no one clearly owns the <strong>layer between</strong>: where asset governance, AI automation, and brand compliance converge. Crop.photo + Evolphin Zoom together could own that space if positioned deliberately.</p>
+        <div class="badge-row">
+          <span class="badge tl"><span class="dot"></span>Whitespace available</span>
+          <span class="badge ok"><span class="dot"></span>Converging products</span>
+        </div>
+      </div>
+
+      <div class="audit-cell full">
+        <div class="audit-label">Competitive snapshot</div>
+        <h3>Where Crop.photo stands in the field</h3>
+        <div class="cmp-strip">
+          <div class="cmp-col">
+            <h4>Competing signals</h4>
+            <div class="cmp-row"><span class="icon">↗</span><span>PhotoRoom: strong consumer and SMB brand; starting to target mid-market ecommerce</span></div>
+            <div class="cmp-row"><span class="icon">↗</span><span>Spyne.ai: focused on automotive and ecommerce verticalization, raised Series B</span></div>
+            <div class="cmp-row"><span class="icon">↗</span><span>Bynder / Canto: enterprise DAM incumbents, adding AI features reactively</span></div>
+            <div class="cmp-row"><span class="icon">↗</span><span>Adobe GenStudio: bundled into Creative Cloud, hard to displace but slow to serve retail ops teams</span></div>
+          </div>
+          <div class="cmp-col">
+            <h4>Crop.photo + Evolphin advantages</h4>
+            <div class="cmp-row"><span class="icon">✓</span><span>Dedicated bulk-processing pipeline vs general-purpose editors</span></div>
+            <div class="cmp-row"><span class="icon">✓</span><span>Evolphin DAM integration: asset governance built in, not bolted on</span></div>
+            <div class="cmp-row"><span class="icon">✓</span><span>Marketplace-specific AI: Amazon, Walmart listing compliance out of the box</span></div>
+            <div class="cmp-row"><span class="icon">✓</span><span>Founder-led, fast-iteration culture vs enterprise software pace</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S2: PLG NARRATIVE -->
+<section id="plg">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">02 · PLG Narrative</span>
+      <span class="sec-label">Designing the growth loop</span>
+    </div>
+    <h2 class="sec-h rv">How a PLG motion works for visual AI</h2>
+    <p class="sec-sub rv">Crop.photo has the raw ingredients for a strong PLG flywheel: a free-trial or freemium entry point, immediate time-to-value through image processing, and an enterprise ceiling (Evolphin) to grow into. The question is how to architect that narrative so users move predictably through the funnel.</p>
+
+    <div class="plg-phases rv">
+      <div class="phase-card">
+        <span class="phase-num">PHASE 01</span>
+        <h3>Discover</h3>
+        <p>Ecommerce managers find Crop.photo through <strong>search, marketplace forums, and LinkedIn</strong> when they're drowning in retouching backlogs. The entry message needs to be immediate: "upload, process, done."</p>
+        <p class="phase-hook">Key hook: show the before/after in the first scroll.</p>
+      </div>
+      <div class="phase-card">
+        <span class="phase-num">PHASE 02</span>
+        <h3>Activate</h3>
+        <p>Users upload a batch and get processed images back in minutes. <strong>The aha moment is the first bulk output</strong>, not a feature tour. Onboarding should be zero-friction: drag, process, download.</p>
+        <p class="phase-hook">Key hook: activation = first download of processed images.</p>
+      </div>
+      <div class="phase-card">
+        <span class="phase-num">PHASE 03</span>
+        <h3>Expand</h3>
+        <p>Users return for the next launch, bring a teammate, hit a volume limit. <strong>Expansion triggers</strong> include: team collaboration needs, brand template requirements, marketplace compliance checks, and API access for developers.</p>
+        <p class="phase-hook">Key hook: "invite your studio manager" prompt post first batch.</p>
+      </div>
+      <div class="phase-card">
+        <span class="phase-num">PHASE 04</span>
+        <h3>Convert to Enterprise</h3>
+        <p>At scale (thousands of SKUs, multiple studios, brand governance requirements), the natural ceiling is <strong>Evolphin Zoom</strong>. The PLG journey should make this transition feel like a natural upgrade, not a product switch.</p>
+        <p class="phase-hook">Key hook: surface Evolphin as "the enterprise layer" not "a different product."</p>
+      </div>
+    </div>
+
+    <div class="plg-insight rv">
+      <strong>The structural insight:</strong> Crop.photo is unusual because it has a PLG surface (easy signup, immediate value) backed by an enterprise engine (Evolphin Zoom DAM) that most PLG-first companies spend years trying to build. Most of the marketing work is stitching those two products into one coherent growth story, so users don't feel like they're switching vendors when they upgrade.
+    </div>
+  </div>
+</section>
+
+<!-- S3: ICP MAP -->
+<section id="icp">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">03 · ICP &amp; Buyer Journey</span>
+      <span class="sec-label">Who buys, and what they're actually thinking</span>
+    </div>
+    <h2 class="sec-h rv">Three buyers, three different jobs</h2>
+    <p class="sec-sub rv">The Crop.photo buyer is not one person. A Shopify brand founder, a retail creative ops lead at a mid-market retailer, and a head of studio at a media company all have the same surface problem (too many images, too slow) but completely different contexts, approval chains, and switching costs.</p>
+
+    <div class="icp-grid rv">
+      <div class="icp-card">
+        <div class="role">Buyer Type A</div>
+        <h3>Ecommerce Brand Founder / Head of Growth</h3>
+        <div class="icp-row">
+          <div class="icp-r"><span class="lbl">Size</span><span>Shopify / DTC, 10-100 SKUs, small team</span></div>
+          <div class="icp-r"><span class="lbl">Pain</span><span>Retouching backlog before seasonal launches, freelancer dependency</span></div>
+          <div class="icp-r"><span class="lbl">Trigger</span><span>Missed a launch deadline or spent too much on a retouching contractor</span></div>
+          <div class="icp-r"><span class="lbl">Message</span><span>"From upload to listing-ready in under an hour, no designer needed."</span></div>
+          <div class="icp-r"><span class="lbl">Channel</span><span>Google search, Shopify app ecosystem, Reddit / ecommerce forums</span></div>
+        </div>
+      </div>
+
+      <div class="icp-card">
+        <div class="role">Buyer Type B</div>
+        <h3>Creative Ops Lead / Studio Manager</h3>
+        <div class="icp-row">
+          <div class="icp-r"><span class="lbl">Size</span><span>Mid-market retailer, 500-5,000 SKUs, dedicated photo studio</span></div>
+          <div class="icp-r"><span class="lbl">Pain</span><span>Studio throughput bottleneck: images pile up waiting for post-processing</span></div>
+          <div class="icp-r"><span class="lbl">Trigger</span><span>Peak season overload (Q4, back-to-school), new marketplace requirement</span></div>
+          <div class="icp-r"><span class="lbl">Message</span><span>"Process 1,000 images overnight, compliant with Amazon and Walmart specs."</span></div>
+          <div class="icp-r"><span class="lbl">Channel</span><span>LinkedIn, industry conferences (DAM NYC, NRF), peer referrals</span></div>
+        </div>
+      </div>
+
+      <div class="icp-card">
+        <div class="role">Buyer Type C</div>
+        <h3>VP Digital / Director of Brand Experience</h3>
+        <div class="icp-row">
+          <div class="icp-r"><span class="lbl">Size</span><span>Enterprise retailer or sports org, tens of thousands of assets</span></div>
+          <div class="icp-r"><span class="lbl">Pain</span><span>Brand consistency across channels, regions, and asset types at scale</span></div>
+          <div class="icp-r"><span class="lbl">Trigger</span><span>Brand audit failure, compliance miss, or agency cost escalation</span></div>
+          <div class="icp-r"><span class="lbl">Message</span><span>"The only platform that combines AI processing with enterprise DAM governance."</span></div>
+          <div class="icp-r"><span class="lbl">Channel</span><span>Evolphin direct sales, analyst reports, strategic partnerships</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="journey-strip rv">
+      <div class="jstep">
+        <span class="js-n">Stage 1</span>
+        <h4>Awareness</h4>
+        <p>Discovers through search or forum recommendation when they have a deadline crisis</p>
+        <span class="cue">Job-to-be-done: fix a backlog fast</span>
+      </div>
+      <div class="jstep active">
+        <span class="js-n">Stage 2</span>
+        <h4>Trial</h4>
+        <p>Uploads first batch, gets processed images back, validates quality vs manual editing</p>
+        <span class="cue">Decision: is the output good enough?</span>
+      </div>
+      <div class="jstep">
+        <span class="js-n">Stage 3</span>
+        <h4>Habit</h4>
+        <p>Returns for next shoot cycle, brings a team member, starts building templates</p>
+        <span class="cue">Expansion: team license trigger</span>
+      </div>
+      <div class="jstep">
+        <span class="js-n">Stage 4</span>
+        <h4>Advocate</h4>
+        <p>Recommends to peer in same network, leaves review, joins case study</p>
+        <span class="cue">Channel: LinkedIn, industry events</span>
+      </div>
+      <div class="jstep">
+        <span class="js-n">Stage 5</span>
+        <h4>Enterprise</h4>
+        <p>Workflow grows beyond Crop.photo's scope, natural entry into Evolphin Zoom DAM</p>
+        <span class="cue">Upgrade: not a switch</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S4: LAUNCH BRIEF -->
+<section id="launch">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">04 · Feature Launch Brief</span>
+      <span class="sec-label">A worked example</span>
+    </div>
+    <h2 class="sec-h rv">Launch: Brand Compliance Mode</h2>
+    <p class="sec-sub rv">A hypothetical (but grounded) launch brief for a feature that moves Crop.photo from "automation tool" to "brand intelligence platform." This is the type of launch that separates the two products from their category and sets up the Evolphin Zoom narrative.</p>
+
+    <div class="launch-shell rv">
+      <div class="launch-header">
+        <div>
+          <h3>Brand Compliance Mode</h3>
+          <p>Crop.photo · Feature Launch Brief · Q3 Hypothetical</p>
+        </div>
+        <div class="launch-status"><span class="status-dot"></span>Launch-ready framework</div>
+      </div>
+
+      <div class="launch-body">
+        <div class="launch-col">
+          <div class="lc-label">What the feature does</div>
+          <div class="lc-item"><span class="ck">→</span><span>Scans output images against a <strong>brand ruleset</strong>: padding ratios, background color ranges, logo safe zones, and marketplace-specific specs</span></div>
+          <div class="lc-item"><span class="ck">→</span><span>Flags images that fall outside brand guidelines before they go to review or listing</span></div>
+          <div class="lc-item"><span class="ck">→</span><span>Pulls brand templates and approved color profiles from <strong>Evolphin Zoom DAM</strong> to auto-apply during processing</span></div>
+          <div class="lc-item"><span class="ck">→</span><span>Generates a <strong>compliance report</strong> per batch: pass/fail by marketplace, by SKU, by channel</span></div>
+        </div>
+        <div class="launch-col">
+          <div class="lc-label tl">How to launch it</div>
+          <div class="lc-item"><span class="ck" style="color:var(--tl)">→</span><span><strong>Week 1:</strong> Webflow landing page update with the new capability; update homepage positioning tile</span></div>
+          <div class="lc-item"><span class="ck" style="color:var(--tl)">→</span><span><strong>Week 2:</strong> Email to existing users: "Your images just got smarter." Short demo video using Arcade or Loom</span></div>
+          <div class="lc-item"><span class="ck" style="color:var(--tl)">→</span><span><strong>Week 3:</strong> LinkedIn launch post from founder + PMM thread unpacking the brand consistency problem</span></div>
+          <div class="lc-item"><span class="ck" style="color:var(--tl)">→</span><span><strong>Week 4:</strong> Customer case study: one Crop.photo user showing before/after compliance audit, tied to a specific marketplace launch</span></div>
+          <div class="lc-item"><span class="ck" style="color:var(--tl)">→</span><span><strong>Ongoing:</strong> G2 review push, Shopify app listing update, SEO content targeting "Amazon image compliance" and "brand consistency automation"</span></div>
+        </div>
+      </div>
+
+      <div class="launch-footer">
+        <div class="lf-item">
+          <div class="lf-k">Primary ICP</div>
+          <div class="lf-v">Creative Ops Lead, Mid-Market Retail</div>
+        </div>
+        <div class="lf-item">
+          <div class="lf-k">Key Metric</div>
+          <div class="lf-v">Trial activations from feature page, upgrade rate</div>
+        </div>
+        <div class="lf-item">
+          <div class="lf-k">Headline Position</div>
+          <div class="lf-v">"Brand-accurate at 10,000 images per batch."</div>
+        </div>
+        <div class="lf-item">
+          <div class="lf-k">Bridge to Enterprise</div>
+          <div class="lf-v">Feature requires Evolphin Zoom for brand template sync</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S5: MESSAGING FRAMEWORK -->
+<section id="framework">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">05 · Messaging Framework</span>
+      <span class="sec-label">One product story, three audiences</span>
+    </div>
+    <h2 class="sec-h rv">Speaking to each buyer in their language</h2>
+    <p class="sec-sub rv">The same product needs to sound completely different depending on who's reading. A DTC founder, a creative ops manager, and a VP of digital have different vocabulary, different stakes, and different reasons to care.</p>
+
+    <div class="msg-grid rv">
+      <div class="msg-card">
+        <div class="msg-left">
+          <div class="seg">Segment A</div>
+          <h3>DTC / Shopify Founder</h3>
+          <p>Speed and cost savings. They're doing this themselves or managing a small team, and every hour saved is runway.</p>
+        </div>
+        <div class="msg-right">
+          <div class="msg-line">From photo shoot to <span>live listing in one afternoon</span>, without hiring a retoucher.</div>
+          <div class="msg-proof">Supporting points: free to try, no design background needed, works on any image type. Proof: "Brands like [X] process their entire seasonal catalog in under a day." Call to action: "Upload your first 10 images free."</div>
+        </div>
+      </div>
+
+      <div class="msg-card">
+        <div class="msg-left">
+          <div class="seg">Segment B</div>
+          <h3>Creative Ops / Studio Manager</h3>
+          <p>Throughput and predictability. They need their studio to hit targets without headcount spikes during peak seasons.</p>
+        </div>
+        <div class="msg-right">
+          <div class="msg-line">Process <span>a full product shoot overnight</span>, marketplace-compliant, without expanding your team.</div>
+          <div class="msg-proof">Supporting points: bulk batch processing, Amazon / Walmart spec checks built in, API access for integration into existing workflows. Proof: "128 hours saved per month" webinar data. Call to action: "Book a workflow audit."</div>
+        </div>
+      </div>
+
+      <div class="msg-card">
+        <div class="msg-left">
+          <div class="seg">Segment C</div>
+          <h3>VP Digital / Director of Brand</h3>
+          <p>Control and governance. They care that thousands of assets across teams, regions, and channels stay on-brand.</p>
+        </div>
+        <div class="msg-right">
+          <div class="msg-line">The only platform that <span>automates visual production and enforces brand governance</span> in the same workflow.</div>
+          <div class="msg-proof">Supporting points: Evolphin Zoom DAM integration means brand templates, approvals, and version control are baked in. Proof: named enterprise customers (Lacoste, UEFA, AP News). Call to action: "Talk to our enterprise team."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S6: CHANNEL PLAY -->
+<section id="channels">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">06 · Qualified Lead Plays</span>
+      <span class="sec-label">Where the best leads actually come from</span>
+    </div>
+    <h2 class="sec-h rv">Two channels worth building now</h2>
+    <p class="sec-sub rv">The JD asks for a concise growth idea. Here are two that are high-leverage, low-waste, and directly suited to where Crop.photo's buyers spend their attention.</p>
+
+    <div class="channel-grid rv">
+      <div class="channel-card">
+        <div class="ch-label">Channel Play A</div>
+        <h3>Amazon / Walmart Marketplace SEO</h3>
+        <p>There's a real search volume around "Amazon product image requirements," "marketplace image compliance," and "Walmart listing guidelines." Most results are fragmented blog posts from agencies. <strong>Crop.photo can own this traffic</strong> with a set of evergreen compliance guides, each ending in a free image audit CTA.</p>
+        <p style="margin-top:10px">The play: write one definitive guide per marketplace. Optimize for the search terms sellers type when they fail a compliance check. Gate a downloadable spec checklist to capture emails. Each article links to a free trial of the listing analyzer.</p>
+        <div class="ch-metric">Intent: high · Cost: low · Timeline: 6-8 weeks to rank</div>
+      </div>
+
+      <div class="channel-card">
+        <div class="ch-label">Channel Play B</div>
+        <h3>Founder-Led LinkedIn Content</h3>
+        <p>Rahul Bhargava (founder and CTO) is building at the intersection of GenAI and retail, which is exactly where LinkedIn's most active B2B audience is right now. <strong>A consistent content program</strong> from the founder, talking about visual AI decisions, customer problems, and product thinking, builds the brand more efficiently than paid at this stage.</p>
+        <p style="margin-top:10px">The play: 2-3 posts per week alternating between "problem unpacked" posts (why ecommerce images fail), "build in public" posts (what we shipped and why), and customer story posts. PMM ghost-writes, founder edits. Goal: 5,000 followers in 6 months, inbound demo requests from content.</p>
+        <div class="ch-metric">Intent: mid-high · Cost: time only · Timeline: compounding</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S7: OTHER WORK -->
+<section id="other-work">
+  <div class="wrap">
+    <div class="sec-ey rv">
+      <span class="sec-tag">07 · Other Relevant Work</span>
+      <span class="sec-label">Selected past projects</span>
+    </div>
+    <h2 class="sec-h rv">Work across category and context</h2>
+
+    <div class="ow-grid rv">
+      <!-- 1. Locad (first per instruction) -->
+      <a href="https://bhanuexcalibur.github.io/Locad/" target="_blank" rel="noopener" class="ow-card featured">
+        <div class="ow-top">
+          <div class="ow-co">Locad</div>
+          <span class="ow-arrow">↗</span>
+        </div>
+        <h3>Fulfillment-as-a-Service GTM in Southeast Asia</h3>
+        <p>Positioning, ICP definition, and go-to-market narrative for an ecommerce fulfillment platform operating across 6 markets. Relevant here because the buyer persona (ecommerce ops, marketplaces, retail at scale) overlaps directly with Crop.photo's Creative Ops ICP.</p>
+        <div class="ow-tags">
+          <span class="ow-tag">Ecommerce GTM</span>
+          <span class="ow-tag">ICP Mapping</span>
+          <span class="ow-tag">Positioning</span>
+          <span class="ow-tag">Southeast Asia</span>
+        </div>
+      </a>
+
+      <!-- 2. Continuous -->
+      <a href="https://bhanuexcalibur.github.io/Continuous/" target="_blank" rel="noopener" class="ow-card">
+        <div class="ow-top">
+          <div class="ow-co">Continuous</div>
+          <span class="ow-arrow">↗</span>
+        </div>
+        <h3>PLG Narrative for a Developer SaaS</h3>
+        <p>Messaging and growth loop design for a PLG-first developer tool. Relevant to the Crop.photo brief because it tackles the same fundamental problem: making a self-serve product convert to enterprise without friction.</p>
+        <div class="ow-tags">
+          <span class="ow-tag">PLG</span>
+          <span class="ow-tag">Developer SaaS</span>
+          <span class="ow-tag">Messaging</span>
+        </div>
+      </a>
+
+      <!-- 3. Canonical -->
+      <a href="https://bhanuexcalibur.github.io/Canonical/" target="_blank" rel="noopener" class="ow-card">
+        <div class="ow-top">
+          <div class="ow-co">Canonical</div>
+          <span class="ow-arrow">↗</span>
+        </div>
+        <h3>Enterprise GTM for Open-Source Infrastructure</h3>
+        <p>Go-to-market strategy for an enterprise infrastructure product with a large community base. The challenge of converting free users to enterprise contracts maps directly onto Crop.photo's PLG-to-Evolphin journey.</p>
+        <div class="ow-tags">
+          <span class="ow-tag">Enterprise GTM</span>
+          <span class="ow-tag">Open Source</span>
+          <span class="ow-tag">Freemium-to-Paid</span>
+        </div>
+      </a>
+
+      <!-- 4. Lifesight -->
+      <a href="https://bhanuexcalibur.github.io/Lifesight/" target="_blank" rel="noopener" class="ow-card">
+        <div class="ow-top">
+          <div class="ow-co">Lifesight</div>
+          <span class="ow-arrow">↗</span>
+        </div>
+        <h3>Marketing Intelligence Positioning</h3>
+        <p>Positioning and messaging for a marketing analytics platform targeting digital and ecommerce brands. Shows range in speaking to marketing and growth buyers at the intersection of AI and decision-making.</p>
+        <div class="ow-tags">
+          <span class="ow-tag">Marketing Analytics</span>
+          <span class="ow-tag">AI Positioning</span>
+          <span class="ow-tag">Ecommerce</span>
+        </div>
+      </a>
+
+      <!-- 5. Stripe -->
+      <a href="https://bhanuexcalibur.github.io/Stripe/" target="_blank" rel="noopener" class="ow-card">
+        <div class="ow-top">
+          <div class="ow-co">Stripe</div>
+          <span class="ow-arrow">↗</span>
+        </div>
+        <h3>Developer-Led GTM at Scale</h3>
+        <p>PMM strategy for one of the most recognized developer-led B2B brands. Relevant for understanding how a technical product earns enterprise trust while maintaining a developer-first identity, a tension Crop.photo will face as it scales.</p>
+        <div class="ow-tags">
+          <span class="ow-tag">Developer GTM</span>
+          <span class="ow-tag">B2B SaaS</span>
+          <span class="ow-tag">Enterprise Trust</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<section style="border-bottom:none">
+  <div class="wrap">
+    <div class="footer">
+      <div>
+        <div class="footer-name">Bhanu Kumar</div>
+        <div class="footer-copy" style="margin-top:4px">B2B Product Marketing · Bengaluru</div>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.linkedin.com/in/bhanuexcalibur/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://drive.google.com/file/d/16YxkMHpBQK0nUaM9NcRrBVWuNuxS2q-l/view?usp=sharing" target="_blank" rel="noopener">Resume</a>
+        <a href="mailto:bhanukumar0902@gmail.com">Email</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ── Reading bar ──────────────────────────────────────────────
+const rbar = document.getElementById('rbar');
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+  rbar.style.width = pct + '%';
+}, { passive: true });
+
+// ── Mobile menu ───────────────────────────────────────────────
+const hbg = document.getElementById('hbg');
+const mob = document.getElementById('mob-menu');
+hbg.addEventListener('click', () => {
+  hbg.classList.toggle('open');
+  mob.classList.toggle('open');
+});
+function closeMob() {
+  hbg.classList.remove('open');
+  mob.classList.remove('open');
+}
+
+// ── Before / After Slider ─────────────────────────────────────
+(function() {
+  const container = document.getElementById('baContainer');
+  const before    = document.getElementById('baBefore');
+  const beforeInner = before ? before.querySelector('.ba-before-inner') : null;
+  const divider   = document.getElementById('baDivider');
+  if (!container || !before || !divider) return;
+
+  let pct = 50;
+  let dragging = false;
+  let rafPending = false;
+
+  function syncDOM() {
+    rafPending = false;
+    const w = container.offsetWidth;
+    // Set inner width so content never squashes
+    if (beforeInner) beforeInner.style.width = w + 'px';
+    // Drive width (no clip-path, no paint)
+    before.style.width  = pct + '%';
+    divider.style.left  = pct + '%';
+  }
+
+  function setPos(clientX) {
+    const rect = container.getBoundingClientRect();
+    let p = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(3, Math.min(97, p));
+    if (!rafPending) { rafPending = true; requestAnimationFrame(syncDOM); }
+  }
+
+  // Init inner width once
+  syncDOM();
+  window.addEventListener('resize', () => { if (!rafPending) { rafPending = true; requestAnimationFrame(syncDOM); } }, { passive: true });
+
+  // Auto-sweep on load: 20% → 80% → 50%
+  let animStart = null;
+  function autoSweep(ts) {
+    if (!animStart) animStart = ts;
+    const t = Math.min((ts - animStart) / 1200, 1);
+    const ease = t < .5 ? 2*t*t : -1+(4-2*t)*t;
+    if (t < .7) {
+      pct = 20 + ease * 76;
+    } else {
+      const t2 = (t - .7) / .3;
+      const ease2 = t2 < .5 ? 2*t2*t2 : -1+(4-2*t2)*t2;
+      pct = 96 - ease2 * 46;
+    }
+    if (!rafPending) { rafPending = true; requestAnimationFrame(syncDOM); }
+    if (t < 1) requestAnimationFrame(autoSweep);
+  }
+  setTimeout(() => requestAnimationFrame(autoSweep), 350);
+
+  // Mouse
+  container.addEventListener('mousedown', e => { dragging = true; setPos(e.clientX); e.preventDefault(); });
+  window.addEventListener('mousemove',    e => { if (dragging) setPos(e.clientX); }, { passive: true });
+  window.addEventListener('mouseup',      () => { dragging = false; });
+
+  // Touch
+  container.addEventListener('touchstart', e => { dragging = true; setPos(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchmove',     e => { if (dragging) setPos(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchend',      () => { dragging = false; });
+})();
+
+// ── Reveal on scroll ──────────────────────────────────────────
+const rv = document.querySelectorAll('.rv');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.07 });
+rv.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
